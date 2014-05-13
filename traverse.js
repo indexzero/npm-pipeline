@@ -32,10 +32,6 @@ var traverse = module.exports = function traverse(dir, mem, callback) {
       return callback(err);
     }
 
-    files = files.filter(function (file) {
-      return /.js$/.test(file);
-    });
-
     async.reduce(
       files,
       mem,
@@ -52,11 +48,11 @@ var traverse = module.exports = function traverse(dir, mem, callback) {
             mem[base] = mem[base] || {};
 
             if (stat.isDirectory()) {
-              return reduceDir(fullpath, mem[base], function (err, subtree) {
+              return traverse(fullpath, mem[base], function (err, subtree) {
                 return next(null, mem);
               });
             }
-            else {
+            else if (path.extname(fullpath) === '.js') {
               return traverse.parse(fullpath, function (err, ast) {
                 mem[base][file] = ast;
                 return next(null, mem);
@@ -66,17 +62,18 @@ var traverse = module.exports = function traverse(dir, mem, callback) {
           else {
             if (stat.isDirectory()) {
               mem[file] = {};
-              return reduceDir(fullpath, mem[file], function (err, subtree) {
+              return traverse(fullpath, mem[file], function (err, subtree) {
                 return next(null, mem);
               });
             }
-            else {
+            else if (path.extname(fullpath) === '.js') {
               return traverse.parse(fullpath, function (err, ast) {
                 mem[file] = ast;
                 return next(null, mem);
               });
             }
           }
+
           next(null, mem);
         });
       },
