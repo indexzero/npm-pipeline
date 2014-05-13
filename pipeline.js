@@ -12,11 +12,12 @@ var path = require('path'),
     mkdirp = require('mkdirp'),
     rimraf = require('rimraf'),
     http = require('http-https'),
-    parse = require('parse-json-response');
+    parse = require('parse-json-response'),
+    traverse = require('./traverse');
 
 //
 // TODO: Maybe give this a package.json rather than just a name so we can do
-// the more complex fetching
+// the more complex fetching. This api could be better
 //
 var Pipeline = module.exports = function (options, callback) {
   if (!(this instanceof Pipeline)) { return new Pipeline(options, callback) }
@@ -151,21 +152,23 @@ Pipeline.prototype.extract = function (file, filename) {
     .on('error', this._onError.bind(this))
     .pipe(tar.extract(dir))
     .on('error', this._onError.bind(this))
-    .on('finish', this.readDir.bind(this, path.join(dir, 'package')));
+    .on('finish', this.traverse.bind(this, path.join(dir, 'package')));
 
 };
 
 //
-// TODO: This is where we start traversal like things on the AST
+// TODO: we shouldn't just start at the lib folder but whatever for now
 //
-Pipeline.prototype.readDir = function (dir) {
-  fs.readdir(dir, function (err, files) {
-    if (err) {
-      return this._onError(err);
-    }
+Pipeline.prototype.traverse = function (dir) {
+  var start = path.join(dir, 'lib');
 
-    this._callback(null, files);
-  }.bind(this));
+  traverse(start, this.onFinish.bind(this));
+};
+
+Pipeline.prototype.onFinish = function (err, ast) {
+  return !err
+    ? this._callback(null, ast)
+    : this._onError(err);
 };
 
 //
