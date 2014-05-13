@@ -1,6 +1,6 @@
 {
   "name": "npm-pipeline",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Extract some tarballs and traverse some javascripts with esprima",
   "main": "index.js",
   "scripts": {
