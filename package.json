@@ -2,7 +2,7 @@
   "name": "npm-pipeline",
   "version": "0.0.0",
   "description": "Extract some tarballs and traverse some javascripts with esprima",
-  "main": "pipeline.js",
+  "main": "index.js",
   "scripts": {
     "test": "tap test/*-test.js"
   },

@@ -92,7 +92,18 @@ traverse.parse = function (filePath, callback) {
     if (err) {
       return callback(err);
     }
-    var ast = esprima.parse(contents);
+
+    var ast;
+    try {
+      ast = esprima.parse(contents);
+    }
+    catch (ex) {
+      //
+      // Suppress errors.
+      //
+      ast = {};
+    }
+
     callback(null, ast);
   });
 };

@@ -68,9 +68,16 @@ Pipeline.prototype._onFetch = function (err, data, res) {
   if (err) { return this._onError(err) }
 
   var latest = data['dist-tags'] && data['dist-tags'].latest,
-      tarUrl = latest && data.versions[latest].dist.tarball;
+      tarUrl = latest && data.versions[latest] && data.versions[latest].dist.tarball;
 
-  if(!latest) { return this._onError(new Error('No latest tag wtf?')) }
+  if (!latest || !tarUrl) {
+    //
+    // Suppress errors for now. This is super hacky but there
+    // is a ton of awful code out there with a bajillion edge cases
+    //
+    return this.onFinish(null, {});
+    //return this._onError(new Error('No latest tag wtf?'))
+  }
 
   //
   // Maybe we care about this later
