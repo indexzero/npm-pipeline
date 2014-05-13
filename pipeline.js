@@ -8,6 +8,7 @@ var path = require('path'),
     crypto = require('crypto'),
     url = require('url'),
     zlib = require('zlib'),
+    async = require('async'),
     tar = require('tar-fs'),
     mkdirp = require('mkdirp'),
     rimraf = require('rimraf'),
@@ -167,9 +168,28 @@ Pipeline.prototype.extract = function (file, filename) {
 // TODO: we shouldn't just start at the lib folder but whatever for now
 //
 Pipeline.prototype.traverse = function (dir) {
-  var start = path.join(dir, 'lib');
+  var libDir = path.join(dir, 'lib'),
+      pkg    = require(path.join(dir, 'package.json')),
+      main   = path.join(dir, pkg.main || 'index.js'),
+      self   = this;
 
-  traverse(start, this.onFinish.bind(this));
+  async.parallel({
+    main: async.apply(traverse, main),
+    lib:  async.apply(traverse, libDir)
+  }, function (err, results) {
+    if (results) {
+      if (results.main) {
+        results[pkg.main] = results.main;
+      }
+
+      delete results.main;
+      if (!results.lib) {
+        delete results.lib;
+      }
+    }
+
+    self.onFinish(err, results);
+  });
 };
 
 Pipeline.prototype.onFinish = function (err, ast) {

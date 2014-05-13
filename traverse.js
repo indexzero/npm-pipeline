@@ -18,8 +18,27 @@ var traverse = module.exports = function traverse(dir, mem, callback) {
     mem = null;
   };
 
-  var base;
+  fs.stat(dir, function (err, stat) {
+    if (err) {
+      return err.code !== 'ENOENT' && err.code !== 'EACCES'
+        ? callback(err)
+        : callback();
+    }
 
+    if (stat.isDirectory()) {
+      return fs.readdir(dir, function (err, files) {
+        return !err
+          ? traverse.recurse(dir, mem, files, callback)
+          : callback(err);
+      });
+    }
+
+    traverse.parse(dir, callback);
+  })
+};
+
+traverse.recurse = function (dir, mem, files, callback) {
+  var base;
   if (mem) {
     base = path.basename(dir);
   }
@@ -27,70 +46,64 @@ var traverse = module.exports = function traverse(dir, mem, callback) {
     mem = mem || {};
   }
 
-  fs.readdir(dir, function (err, files) {
-    if (err) {
-      return callback(err);
+  async.reduce(
+    files, mem,
+    function (memo, file, next) {
+      var fullpath = path.join(dir, file);
+      fs.stat(fullpath, function (err, stat) {
+        if (err) {
+          return err.code !== 'ENOENT' && err.code !== 'EACCES'
+            ? next(err)
+            : next();
+        }
+
+        if (base) {
+          mem[base] = mem[base] || {};
+
+          if (stat.isDirectory()) {
+            return traverse(fullpath, mem[base], function (err, subtree) {
+              return next(null, mem);
+            });
+          }
+          else if (path.extname(fullpath) === '.js') {
+            return traverse.parse(fullpath, function (err, ast) {
+              mem[base][file] = ast;
+              return next(null, mem);
+            });
+          }
+        }
+        else {
+          if (stat.isDirectory()) {
+            mem[file] = {};
+            return traverse(fullpath, mem[file], function (err, subtree) {
+              return next(null, mem);
+            });
+          }
+          else if (path.extname(fullpath) === '.js') {
+            return traverse.parse(fullpath, function (err, ast) {
+              mem[file] = ast;
+              return next(null, mem);
+            });
+          }
+        }
+
+        next(null, mem);
+      });
+    },
+    function (err, result) {
+      return err
+        ? callback(err)
+        : callback(null, result)
     }
-
-    async.reduce(
-      files,
-      mem,
-      function (memo, file, next) {
-        var fullpath = path.join(dir, file);
-        fs.stat(fullpath, function (err, stat) {
-          if (err) {
-            return err.code !== 'ENOENT'
-              ? next(err)
-              : next();
-          }
-
-          if (base) {
-            mem[base] = mem[base] || {};
-
-            if (stat.isDirectory()) {
-              return traverse(fullpath, mem[base], function (err, subtree) {
-                return next(null, mem);
-              });
-            }
-            else if (path.extname(fullpath) === '.js') {
-              return traverse.parse(fullpath, function (err, ast) {
-                mem[base][file] = ast;
-                return next(null, mem);
-              });
-            }
-          }
-          else {
-            if (stat.isDirectory()) {
-              mem[file] = {};
-              return traverse(fullpath, mem[file], function (err, subtree) {
-                return next(null, mem);
-              });
-            }
-            else if (path.extname(fullpath) === '.js') {
-              return traverse.parse(fullpath, function (err, ast) {
-                mem[file] = ast;
-                return next(null, mem);
-              });
-            }
-          }
-
-          next(null, mem);
-        });
-      },
-      function (err, result) {
-        return err
-          ? callback(err)
-          : callback(null, result)
-      }
-    )
-  });
-
-};
+  )
+}
 
 traverse.parse = function (filePath, callback) {
   return fs.readFile(filePath, 'utf8', function (err, contents) {
     if (err) {
-      return callback(err);
+      return err.code !== 'ENOENT' && err.code !== 'EACCES'
+        ? callback(err)
+        : callback();
     }
 
     var ast;

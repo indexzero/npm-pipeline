@@ -49,36 +49,66 @@ var analyze = module.exports = function analyze(files, mod) {
 //     }
 //
 analyze.tokens = function (tokens, files) {
-  var results = {
-    calls: {}
-  };
+  var results = {};
+
+  //
+  // ### function incr(type, target)
+  // Increments the calls for target
+  //
+  function incr(type, target) {
+    results[type]         = results[type]         || {};
+    results[type][target] = results[type][target] || 0;
+    results[type][target]++;
+  }
 
   tokens.forEach(function (tok) {
     var ast  = objs.path(files, tok.path),
         walk = new Walker();
 
     walk.traverse(ast, function (node) {
-      var callee = node.callee,
-          target;
+      var init   = node.init,
+          callee = node.callee,
+          value;
 
       //
-      // (i) Bread and butter function CallExpression
+      // TODO: Implement this as a proper visitor pattern
       //
       if (node.type === 'CallExpression' && callee) {
+        //
+        // (i) Bread and butter function CallExpression
+        //
         if (callee.type === 'MemberExpression'
             && callee.object && callee.object.type === 'Identifier'
             && callee.object.name === tok.name) {
-          target = callee.property.name;
-          results.calls[target] = results.calls[target] || 0;
-          results.calls[target]++;
+          incr('call', callee.property.name);
         }
       }
+      else if (node.type === 'VariableDeclarator') {
+        //
+        // (ii) Check for all VariableDeclarator where this token is the
+        // RHS of the assignment so that we may
+        // expand our search.
+        //
+        if (init && init.type === 'MemberExpression') {
+          value = analyze.expandMember(tok.name, node.init);
+          if (value) {
+            incr('assign', value);
+          }
+        }
+      }
+      else if (node.type === 'AssignmentExpression') {
+        //
+        // (iii) Check for all AssignmentExpression where this token is the
+        // RHS of the assignment so that we may
+        // expand our search.
+        //
+//        console.dir(node);
+      }
+
+
       //
-      // (ii) TODO: Check for places where this token is an argument
+      // (iii) TODO: Check for places where this token is an argument
       // to another CallExpression (e.g. async.apply(async.waterfall, [fn,fn]))).
-      //
-      // (iii) TODO: Check for all AssignmentExpressions where this token is
-      // the RHS of the assignment so that we may expand our search.
       //
       // (iv) TODO: Check for all NewExpressions where this token (or subtoken)
       // is being instantiated so that we may expand our search.
@@ -152,6 +182,36 @@ analyze.onlyRequiredAs = function (ast, name) {
       return { name: decl.id.name, source: decl.init.arguments[0].value, raw: decl };
     });
   }));
+};
+
+//
+// ### function expandMember (target, expr)
+// Expands a nested member expression with the specified
+// target Identifier
+//
+analyze.expandMember = function (target, expr, path) {
+  path = path || [];
+  path.push(expr.property.name || expr.property.raw);
+
+  //
+  // If it is not a MemberExpression then halt
+  // and return the reverse of the path
+  //
+  if (expr.object.type === 'Identifier'
+    && expr.object && expr.object.name === target) {
+    path.push(expr.object.name);
+    path = path.reverse()
+    path.shift();
+    return path.join('.');
+  }
+  else if (expr.object.type !== 'MemberExpression') {
+    return;
+  }
+
+  //
+  // Otherwise continue the expansion.
+  //
+  return analyze.expandMember(target, expr.object, path);
 };
 
 //
