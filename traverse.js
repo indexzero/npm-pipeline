@@ -96,6 +96,6 @@ traverse.parse = function (filePath, callback) {
       return callback(err);
     }
     var ast = esprima.parse(contents);
-    callback(null, JSON.stringify(ast));
+    callback(null, ast);
   });
 };
