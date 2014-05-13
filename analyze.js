@@ -3,9 +3,6 @@
 *
 */
 
-var fs = require('fs'),
-    async = require('async');
-
 var analyze = module.exports = function analyze(ast, callback) {
   var stats = {}; //1
   stats.counter = 0;
