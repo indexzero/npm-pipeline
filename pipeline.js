@@ -1,5 +1,5 @@
 /*
- * .js :: Fetch a package and untar it into a directory
+ * pipeline.js :: Fetch a package and untar it into a directory
  *
  */
 
