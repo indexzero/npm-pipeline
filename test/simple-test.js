@@ -4,18 +4,26 @@ var test = require('tap').test,
     pipeline = require('../pipeline'),
     analyze = require('../analyze');
 
-test('Do we work', function (t) {
-  t.plan(3);
-  pipeline('winston', function (err, ast) {
+test('When static-analyzing module-smith for `async`', function (t) {
+  t.plan(5);
+  pipeline('module-smith', function (err, files) {
     if (err) return t.fail(err.message);
-    t.ok(ast, 'Resolved an AST object for winston');
-    fs.writeFile(path.join(__dirname, 'winston.json'), JSON.stringify(ast, null, 2), function (err) {
+    t.ok(files, 'Resolved an AST files object for module-smith');
+
+    fs.writeFile(path.join(__dirname, 'module-smith.json'), JSON.stringify(files, null, 2), function (err) {
       if (err) return t.fail(err.message);
-      t.ok(true, 'Successfully written file of winston');
+      t.ok(true, 'Successfully written file of module-smith');
     });
-    analyze(ast, function (err) {
-      if (err) return t.fail(err.message);
-      t.ok(true, 'Walked the tree for winston');
-    });
+
+    var results;
+    try {
+      results = analyze(files, 'async');
+      t.equal(results.calls.waterfall, 4);
+      t.equal(results.calls.parallel, 2);
+      t.equal(results.calls.apply, 2);
+    }
+    catch (ex) {
+      return t.fail(ex.message)
+    }
   });
 });
