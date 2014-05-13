@@ -96,22 +96,36 @@ analyze.tokens = function (tokens, files) {
           }
         }
       }
-      else if (node.type === 'AssignmentExpression') {
+      else if (node.type === 'AssignmentExpression'
+        && node.right.type === 'Identifier') {
         //
         // (iii) Check for all AssignmentExpression where this token is the
         // RHS of the assignment so that we may
         // expand our search.
         //
-//        console.dir(node);
+        // console.dir(node.right)
       }
-
-
+      else if (node.type === 'NewExpression' && callee) {
+        //
+        // (iv) Check for all NewExpression where this token is the
+        // RHS of the assignment so that we may expand our search.
+        //
+        if (callee.type === 'MemberExpression') {
+          value = analyze.expandMember(tok.name, callee);
+          if (value) {
+            incr('new', value);
+            if (node.parent && (node.parent.type === 'VariableDeclarator'
+              || node.parent.type === 'AssignmentExpression')) {
+              //
+              // TODO: Push this node back onto our set of tokens
+              //
+            }
+          }
+        }
+      }
       //
-      // (iii) TODO: Check for places where this token is an argument
+      // (v) TODO: Check for places where this token is an argument
       // to another CallExpression (e.g. async.apply(async.waterfall, [fn,fn]))).
-      //
-      // (iv) TODO: Check for all NewExpressions where this token (or subtoken)
-      // is being instantiated so that we may expand our search.
       //
     });
   });

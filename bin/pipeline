@@ -4,16 +4,20 @@ var analyze = require('../analyze'),
     pipeline = require('../pipeline');
 
 var name  = process.argv[2] || 'module-smith',
-    mod   = process.argv[3] || 'async',
-    files = require('../test/' + name + '.json');
+    mod   = process.argv[3] || 'async';
 
 try {
-  var results = analyze(files, mod);
+  var results = analyze(require('../test/' + name + '.json'), mod);
   console.dir(results);
 }
 catch (ex) {
-  console.dir(ex);
-  if (ex.stack) {
-    console.log(ex.stack);
-  }
+  pipeline(name, function (err, files) {
+    try {
+      var results = analyze(files, mod);
+      console.dir(results);
+    }
+    catch (ex) {
+      console.dir(ex);
+    }
+  });
 }
