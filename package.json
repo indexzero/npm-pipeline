@@ -1,0 +1,36 @@
+{
+  "name": "npm-pipeline",
+  "version": "0.0.0",
+  "description": "Extract some tarballs and traverse some javascripts with esprima",
+  "main": "pipeline.js",
+  "scripts": {
+    "test": "tap test/*-test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/indexzero/npm-pipeline.git"
+  },
+  "keywords": [
+    "pipeline",
+    "npm",
+    "esprima",
+    "ast"
+  ],
+  "author": "",
+  "license": "Proprietary?",
+  "bugs": {
+    "url": "https://github.com/indexzero/npm-pipeline/issues"
+  },
+  "homepage": "https://github.com/indexzero/npm-pipeline",
+  "dependencies": {
+    "esprima": "^1.2.1",
+    "http-https": "^1.0.0",
+    "mkdirp": "^0.5.0",
+    "parse-json-response": "^1.0.1",
+    "rimraf": "^2.2.8",
+    "tar-fs": "^0.3.2"
+  },
+  "devDependencies": {
+    "tap": "^0.4.9"
+  }
+}
