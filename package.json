@@ -1,7 +1,7 @@
 {
   "name": "npm-pipeline",
-  "version": "1.1.0",
   "description": "Extract some tarballs and traverse some javascripts with esprima",
+  "version": "1.1.0",
   "main": "lib/index.js",
   "scripts": {
     "test": "tap test/*-test.js"
