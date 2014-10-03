@@ -29,10 +29,9 @@
     "mkdirp": "~0.5.0",
     "parse-json-response": "~1.0.1",
     "rimraf": "~2.2.8",
-    "tap": "~0.4.13",
     "tar-fs": "~0.3.2"
   },
   "devDependencies": {
-    "tap": "~0.4.9"
+    "tap": "~0.4.13"
   }
 }
