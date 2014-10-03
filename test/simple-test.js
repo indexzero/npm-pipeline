@@ -1,11 +1,10 @@
 var test = require('tap').test,
     fs = require('fs'),
     path = require('path'),
-    pipeline = require('../pipeline'),
-    analyze = require('../analyze');
+    pipeline = require('../lib/pipeline');
 
-test('When static-analyzing module-smith for `async`', function (t) {
-  t.plan(5);
+test('When preparing for static analysis for module-smith', function (t) {
+  t.plan(3);
   pipeline('module-smith', function (err, files) {
     if (err) return t.fail(err.message);
     t.ok(files, 'Resolved an AST files object for module-smith');
@@ -15,12 +14,8 @@ test('When static-analyzing module-smith for `async`', function (t) {
       t.ok(true, 'Successfully written file of module-smith');
     });
 
-    var results;
     try {
-      results = analyze(files, 'async');
-      t.equal(results.calls.waterfall, 4);
-      t.equal(results.calls.parallel, 2);
-      t.equal(results.calls.apply, 2);
+      t.type(files.lib['builder.js'], 'object', 'should parse builder.js using esprima');
     }
     catch (ex) {
       return t.fail(ex.message)

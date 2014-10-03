@@ -17,6 +17,14 @@ pipeline('package-name', function (err, files) {
 });
 ```
 
+### Tests
+
+Tests are written in `tap`:
+
+```
+npm test
+```
+
 ### License: Apache 2
 ### Author: [Charlie Robbins](https://github.com/indexzero)
 
