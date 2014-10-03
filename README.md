@@ -1,4 +1,22 @@
-npm-pipeline
-============
+# npm-pipeline
 
-Analysis pipeline for npm packages
+An analysis pipeline for npm packages. Get your `npm` packages hot of the registry downloaded, unpacked, and (if desired) read and parsed with `esprima`
+
+### Usage
+
+``` js
+
+var pipeline = require('npm-pipeline');
+
+pipeline('package-name', function (err, files) {
+  //
+  // The "files" array here will be a hierarchical object
+  // containing all files read off of disk. If the file is
+  // a Javascript file then it will be preparsed by `esprima`.
+  //
+});
+```
+
+### License: Apache 2
+### Author: [Charlie Robbins](https://github.com/indexzero)
+
