@@ -17,6 +17,10 @@
     "ast"
   ],
   "author": "Charlie Robbins <charlie.robbins@gmail.com>",
+  "contributors": [
+    "Jarrett Cruger <jcrugzz@gmail.com>",
+    "Jane Kim <jane@janekim.me>"
+  ],
   "license": "Apache2",
   "bugs": {
     "url": "https://github.com/indexzero/npm-pipeline/issues"

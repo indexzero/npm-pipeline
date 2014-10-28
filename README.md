@@ -25,6 +25,7 @@ Tests are written in `tap`:
 npm test
 ```
 
-### License: Apache 2
-### Author: [Charlie Robbins](https://github.com/indexzero)
+##### License: Apache 2
+##### Author: [Charlie Robbins](https://github.com/indexzero)
+##### Contributors: [Jarrett Cruger](https://github.com/jcruggz), [Jane Kim](https://github.com/janecakemaster)
 
